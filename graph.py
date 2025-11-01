@@ -23,7 +23,7 @@ class Graph:
                     x_axis_label='Time (s)', 
                     y_axis_label='CPU Load (%)',
                     x_range=[0, max(time) / 1000],
-                    y_range=[0, 110],
+                    y_range=[0, 105],
                     width=620, height=500)
         p0.vbar(x=(time/1000), top=data['CPU 0 Load (%)'], width=0.01)
         plots.append(p0)
@@ -40,13 +40,14 @@ class Graph:
             plots.append(p)
 
         # RAM usage plot (linked x only)
-        p_ram = figure(title='Used EMC (%) vs Time (s)', 
+        p_emc = figure(title='Used EMC (%) vs Time (s)', 
                       x_axis_label='Time (s)', 
                       y_axis_label='Used EMC (%)',
                       x_range=p0.x_range,
+                      y_range=[0, data['Used EMC (%)'].max() + 5],
                       width=620, height=500)
-        p_ram.vbar(x=(time/1000), top=data['Used EMC (%)'], width=0.01, color='green')
-        plots.append(p_ram)
+        p_emc.vbar(x=(time/1000), top=data['Used EMC (%)'], width=0.01, color='green')
+        plots.append(p_emc)
 
         # Arrange plots in a grid and show
         grid = gridplot(plots, ncols=3)
