@@ -20,6 +20,14 @@ class Parse:
         lookup_table['Cached SWAP (MB)'] = float(swap[2])
         return lookup_table
 
+    # iRAM isn't logged by UTFR jetson
+
+    # def parse_iram(self, lookup_table, iram):
+    #     lookup_table['Used IRAM (kB)'] = float(iram[0])
+    #     lookup_table['Total IRAM (kB)'] = float(iram[1])
+    #     lookup_table['Size of IRAM Blocks (kB)'] = float(iram[2])
+    #     return lookup_table
+
     def parse_cpus(self, lookup_table, cpus):
         frequency = re.findall(r'@([0-9]*)', cpus)
         lookup_table['CPU Frequency (MHz)'] = float(frequency[0]) if frequency else ''
@@ -29,6 +37,7 @@ class Parse:
 
     def parse_gr3d(self, lookup_table, gr3d):
         lookup_table['Used GR3D (%)'] = float(gr3d[0])
+        # lookup_table['GR3D Frequency (MHz)'] = float(gr3d[1]) if gr3d[1] else '' # Muaz said dw about this for now
         return lookup_table
 
     def parse_emc(self, lookup_table, emc):
@@ -56,6 +65,11 @@ class Parse:
         swap = re.findall(r'SWAP ([0-9]*)\/([0-9]*)MB \(cached ([0-9]*)MB\)', line)
         self.parse_swap(lookup_table, swap[0]) if swap else None
 
+        # Iram isn't tracked for UTFR jetson   
+
+        # iram = re.findall(r'IRAM ([0-9]*)\/([0-9]*)kB \(lfb ([0-9]*)kB\)', line)
+        # self.parse_iram(lookup_table, iram[0]) if iram else None
+
         # Changed CPU regex to be non-greedy "\[(.*?)\]" to capture multiple CPU loads - prevents overflow which would read GR3D as part of CPU
         cpus = re.findall(r'CPU \[(.*?)\]', line)
         self.parse_cpus(lookup_table, cpus[0]) if cpus else None
@@ -69,6 +83,12 @@ class Parse:
 
         emc = re.findall(r'EMC_FREQ ([0-9]*)%@?([0-9]*)?', line)
         self.parse_emc(lookup_table, emc[0]) if emc else None
+
+        # NVENC is off for UTFR jetson
+
+        # nvenc = re.findall(r'NVENC ([0-9]*)', line)
+        # if nvenc:
+        #     lookup_table['NVENC frequency (MHz)'] = float(nvenc[0])
 
         mts = re.findall(r'MTS fg ([0-9]*)% bg ([0-9]*)%', line) # !!!!
 

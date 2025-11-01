@@ -1,30 +1,59 @@
-import csv
-import matplotlib.pyplot as plt
 import pandas as pd
-
-colors = ['red', 'green', 'blue', 'yellow', 'pink', 'black', 'orange',
-          'purple', 'brown', 'gray', 'cyan', 'magenta']
-
-pairs = [('Time (mS)', 'Used GR3D (%)'), ('Time (mS)', 'Current VDD_SYS_GPU Power Consumption (mW)')]
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure, show, output_file
 
 class Graph:
     def __init__(self, csv_file):
-        self.df = pd.read_csv(csv_file, skiprows=1, header=0, index_col=0)
-
-    def scatter_plot(self, x, y):
-        plt.figure()
-        plt.title(f'{x} vs. {y}')
-        plt.xlabel(x)
-        plt.ylabel(y)
-        plt.scatter(self.df.loc[:, x], self.df.loc[:, y])
-        plt.savefig(f'{x} vs. {y}.png')
+        self.csv_file = csv_file
 
     def plots(self):
-        for pair in pairs:
-            self.scatter_plot(pair[0], pair[1])
+        # Read CSV file
+        df = pd.read_csv(self.csv_file, skiprows=[0])
+        data = {}
+        headers = df.columns
+        for header in headers:
+            data[header] = df[header].values
+
+        # Create plots for CPU loads and RAM usage
+        plots = []
+        time = data['Time (mS)']
+        
+        # First plot (no linked ranges yet)
+        p0 = figure(title='CPU 0 Load (%) vs Time (s)', 
+                    x_axis_label='Time (s)', 
+                    y_axis_label='CPU Load (%)',
+                    x_range=[0, max(time) / 1000],
+                    y_range=[0, 110],
+                    width=620, height=500)
+        p0.vbar(x=(time/1000), top=data['CPU 0 Load (%)'], width=0.01)
+        plots.append(p0)
+        
+        # Remaining CPU plots (linked to first plot's ranges)
+        for i in range(1, 12):
+            p = figure(title=f'CPU {i} Load (%) vs Time (s)', 
+                      x_axis_label='Time (s)', 
+                      y_axis_label='CPU Load (%)',
+                      x_range=p0.x_range, 
+                      y_range=p0.y_range,
+                      width=620, height=500)
+            p.vbar(x=(time/1000), top=data[f'CPU {i} Load (%)'], width=0.01)
+            plots.append(p)
+
+        # RAM usage plot (linked x only)
+        p_ram = figure(title='Used RAM (MB) vs Time (s)', 
+                      x_axis_label='Time (s)', 
+                      y_axis_label='Used RAM (MB)',
+                      x_range=p0.x_range,
+                      width=620, height=500)
+        p_ram.vbar(x=(time/1000), top=data['Used RAM (MB)'], width=0.01, color='green')
+        plots.append(p_ram)
+
+        # Arrange plots in a grid and show
+        grid = gridplot(plots, ncols=3)
+        output_file("tegrastats_plots.html")
+        show(grid)
 
 if __name__ == '__main__':
-    csv_file = 'sample_log.csv'
-
+    csv_file = 'tegra_stats_log.csv'
     graph = Graph(csv_file)
     graph.plots()

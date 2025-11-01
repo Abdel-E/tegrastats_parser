@@ -40,7 +40,7 @@ class Tegrastats:
         return True
 
 if __name__ == '__main__':
-    interval = 1000
+    interval = 500  # in milliseconds
     log_file = 'output_log.txt'
     verbose = False
 
