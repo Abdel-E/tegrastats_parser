@@ -40,12 +40,12 @@ class Graph:
             plots.append(p)
 
         # RAM usage plot (linked x only)
-        p_ram = figure(title='Used RAM (MB) vs Time (s)', 
+        p_ram = figure(title='Used EMC (%) vs Time (s)', 
                       x_axis_label='Time (s)', 
-                      y_axis_label='Used RAM (MB)',
+                      y_axis_label='Used EMC (%)',
                       x_range=p0.x_range,
                       width=620, height=500)
-        p_ram.vbar(x=(time/1000), top=data['Used RAM (MB)'], width=0.01, color='green')
+        p_ram.vbar(x=(time/1000), top=data['Used EMC (%)'], width=0.01, color='green')
         plots.append(p_ram)
 
         # Arrange plots in a grid and show
